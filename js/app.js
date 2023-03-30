@@ -18,14 +18,14 @@ function buscarClima(e){
 
     if(ciudad === '' || pais === ''){
         //Hubo un error
-
         mostrarError('Todos los campos son obligatorios');
         return;
     }else{
         console.log('Buscando el clima');
     }
 
-    //consumo de API
+    //Consultar la API
+    consultarAPI(ciudad, pais);
 }
 
 function mostrarError(mensaje){
@@ -48,4 +48,63 @@ function mostrarError(mensaje){
             alerta.remove();
        }, 2000);
    } 
+};
+
+function consultarAPI(ciudad, pais) {
+    const appId = 'c63b03294260d002492332226542661d';
+
+    const url = `https://api.openweathermap.org/data/2.5/weather?q=${ciudad},${pais}&appid=${appId}`;
+
+    console.log('url', url);
+
+    fetch(url)
+        .then(respuesta =>{
+            console.log('respuesta', respuesta);
+            return respuesta.json();
+        })
+        .then(datos =>{
+            
+            //Limpiar HTML previo
+            limpiarHTML();
+
+            //Valida si la ciudad existe o no
+            if(datos.cod === '404'){
+                mostrarError('Ciudad no encontrada');
+                return;
+            };
+
+            //Imprime la respuesta en HTML
+            mostrarClima(datos);
+        })
+        .catch(error =>{
+            console.log('error', error);
+        })
+};
+
+
+function mostrarClima(datos){
+    const {main: {temp, temp_max, tem_min}} = datos; //Destruction de un objeto que esta dentro de otro objeto
+    const centigrados = kelvinACentigrados(temp);
+    
+    const actual = document.createElement('P');
+    actual.innerHTML = `${centigrados} &#8451;`;
+    actual.classList.add('font-bold', 'text-6xl');
+
+    const resultadoDiv = document.createElement('DIV');
+    resultadoDiv.classList.add('text-center', 'text-white');
+    resultadoDiv.appendChild(actual);
+
+    resultado.appendChild(resultadoDiv);
+}
+
+/* function kelvinACentigrados(grados){
+    return parseInt(grados -273.15);
+} */
+
+const kelvinACentigrados= (grados) => parseInt(grados -273.15);
+
+function limpiarHTML(){
+    while(resultado.firstChild){
+        resultado.removeChild(resultado.firstChild);
+    }
 }
